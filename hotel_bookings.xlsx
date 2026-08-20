@@ -1,0 +1,524 @@
+# ============================================================
+# HOTEL BOOKING DATASET - EDA, DATA CLEANING & TRANSFORMATION
+# ============================================================
+
+
+# ============================================================
+# 1. IMPORT REQUIRED LIBRARIES
+# ============================================================
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+
+# Install required packages
+!pip install -q ydata-profiling
+!pip install -q sweetviz
+
+from ydata_profiling import ProfileReport
+import sweetviz as sv
+
+
+# ============================================================
+# 2. UPLOAD DATASET - GOOGLE COLAB
+# ============================================================
+
+from google.colab import files
+
+uploaded = files.upload()
+
+print("\nUploaded files:")
+print(os.listdir())
+
+
+# ============================================================
+# 3. LOAD DATASET
+# ============================================================
+
+# Make sure the uploaded file name is exactly:
+# hotel_bookings.xlsx
+
+hotel = pd.read_excel("hotel_bookings.xlsx")
+
+print("Dataset loaded successfully!")
+
+
+# ============================================================
+# 4. DISPLAY FIRST 5 ROWS
+# ============================================================
+
+print("\nFirst 5 rows:")
+display(hotel.head())
+
+
+# ============================================================
+# 5. DATASET SHAPE
+# ============================================================
+
+print("\nDataset Shape:")
+print("Rows    :", hotel.shape[0])
+print("Columns :", hotel.shape[1])
+
+
+# ============================================================
+# 6. COLUMN / ATTRIBUTE DETAILS
+# ============================================================
+
+print("\nColumn Names:")
+print(hotel.columns.tolist())
+
+
+# ============================================================
+# 7. DATAFRAME INFORMATION
+# ============================================================
+
+print("\nDataFrame Information:")
+hotel.info()
+
+
+# ============================================================
+# 8. STATISTICAL SUMMARY
+# ============================================================
+
+print("\nNumerical Statistical Summary:")
+display(hotel.describe())
+
+
+print("\nComplete Statistical Summary:")
+display(hotel.describe(include="all"))
+
+
+# ============================================================
+# 9. CHECK MISSING VALUES
+# ============================================================
+
+print("\nMissing Values:")
+missing_values = hotel.isnull().sum()
+display(missing_values)
+
+
+# ============================================================
+# 10. MISSING VALUE PERCENTAGE
+# ============================================================
+
+print("\nMissing Value Percentage:")
+missing_percentage = hotel.isnull().mean() * 100
+display(missing_percentage.sort_values(ascending=False))
+
+
+# ============================================================
+# 11. CHECK DUPLICATE RECORDS
+# ============================================================
+
+duplicate_count = hotel.duplicated().sum()
+
+print("\nNumber of Duplicate Records:", duplicate_count)
+
+
+# ============================================================
+# 12. CHECK IMPORTANT ATTRIBUTES
+# ============================================================
+
+important_columns = ["children", "country", "agent", "company"]
+
+print("\nMissing values in important columns:")
+display(hotel[important_columns].isnull().sum())
+
+
+# ============================================================
+# 13. DATA CLEANING - HANDLE MISSING VALUES
+# ============================================================
+
+# Children
+hotel["children"] = hotel["children"].fillna(0)
+
+# Country - replace missing values with mode
+hotel["country"] = hotel["country"].fillna(hotel["country"].mode()[0])
+
+# Agent - 0 means no agent recorded
+hotel["agent"] = hotel["agent"].fillna(0)
+
+# Company - 0 means no company recorded
+hotel["company"] = hotel["company"].fillna(0)
+
+
+# ============================================================
+# 14. REMOVE DUPLICATE RECORDS
+# ============================================================
+
+hotel = hotel.drop_duplicates()
+
+print("\nDuplicate records after cleaning:")
+print(hotel.duplicated().sum())
+
+
+# ============================================================
+# 15. CHECK REMAINING MISSING VALUES
+# ============================================================
+
+print("\nRemaining Missing Values:")
+display(hotel.isnull().sum())
+
+
+# ============================================================
+# 16. DATA TYPE CHECK
+# ============================================================
+
+print("\nData Types:")
+display(hotel.dtypes)
+
+
+# ============================================================
+# 17. CONVERT DATA TYPES
+# ============================================================
+
+hotel["children"] = hotel["children"].astype(int)
+
+
+# ============================================================
+# 18. CHECK DATA TYPES AFTER CONVERSION
+# ============================================================
+
+print("\nData Types After Conversion:")
+display(hotel.dtypes)
+
+
+# ============================================================
+# 19. CHECK UNIQUE VALUES
+# ============================================================
+
+print("\nNumber of Unique Values:")
+display(hotel.nunique().sort_values(ascending=False))
+
+
+# ============================================================
+# 20. VALUE COUNTS - HOTEL
+# ============================================================
+
+print("\nHotel Type Distribution:")
+display(hotel["hotel"].value_counts())
+
+
+# ============================================================
+# 21. VALUE COUNTS - MEAL
+# ============================================================
+
+print("\nMeal Distribution:")
+display(hotel["meal"].value_counts())
+
+
+# ============================================================
+# 22. VALUE COUNTS - CUSTOMER TYPE
+# ============================================================
+
+print("\nCustomer Type Distribution:")
+display(hotel["customer_type"].value_counts())
+
+
+# ============================================================
+# 23. VALUE COUNTS - MARKET SEGMENT
+# ============================================================
+
+print("\nMarket Segment Distribution:")
+display(hotel["market_segment"].value_counts())
+
+
+# ============================================================
+# 24. AUTOMATED EDA - YDATA PROFILING
+# ============================================================
+
+profile = ProfileReport(
+    hotel,
+    title="Hotel Booking Dataset - EDA Report",
+    explorative=True
+)
+
+# Display report inside notebook
+profile.to_notebook_iframe()
+
+
+# ============================================================
+# 25. SAVE YDATA PROFILING REPORT
+# ============================================================
+
+profile.to_file("Hotel_Booking_Report.html")
+
+print("\nYData Profiling report saved as:")
+print("Hotel_Booking_Report.html")
+
+
+# ============================================================
+# 26. SWEETVIZ AUTOMATED EDA
+# ============================================================
+
+sweetviz_report = sv.analyze(hotel)
+
+sweetviz_report.show_html(
+    "Hotel_Booking_Sweetviz_Report.html",
+    open_browser=False
+)
+
+print("\nSweetviz report saved as:")
+print("Hotel_Booking_Sweetviz_Report.html")
+
+
+# ============================================================
+# 27. MANUAL EDA
+# ============================================================
+
+# Mean Lead Time
+mean_lead_time = hotel["lead_time"].mean()
+
+print("\nMean Lead Time:")
+print(round(mean_lead_time, 2))
+
+
+# Maximum ADR
+maximum_adr = hotel["adr"].max()
+
+print("\nMaximum ADR:")
+print(round(maximum_adr, 2))
+
+
+# Average Weekend Stay
+average_weekend_stay = hotel["stays_in_weekend_nights"].mean()
+
+print("\nAverage Weekend Stay:")
+print(round(average_weekend_stay, 2))
+
+
+# Average Weekday Stay
+average_weekday_stay = hotel["stays_in_week_nights"].mean()
+
+print("\nAverage Weekday Stay:")
+print(round(average_weekday_stay, 2))
+
+
+# ============================================================
+# 28. CATEGORICAL SUMMARY
+# ============================================================
+
+print("\nHotel Distribution:")
+display(hotel["hotel"].value_counts())
+
+
+print("\nCustomer Type Distribution:")
+display(hotel["customer_type"].value_counts())
+
+
+print("\nMarket Segment Distribution:")
+display(hotel["market_segment"].value_counts())
+
+
+# ============================================================
+# 29. NUMERICAL CORRELATION
+# ============================================================
+
+numeric_data = hotel.select_dtypes(include=np.number)
+
+correlation_matrix = numeric_data.corr()
+
+print("\nCorrelation Matrix:")
+display(correlation_matrix)
+
+
+# ============================================================
+# 30. CORRELATION HEATMAP
+# ============================================================
+
+plt.figure(figsize=(14, 10))
+
+sns.heatmap(
+    correlation_matrix,
+    cmap="coolwarm",
+    annot=False
+)
+
+plt.title("Hotel Booking Dataset - Correlation Heatmap")
+plt.tight_layout()
+plt.show()
+
+
+# ============================================================
+# 31. HOTEL TYPE BAR CHART
+# ============================================================
+
+plt.figure(figsize=(8, 5))
+
+hotel["hotel"].value_counts().plot(kind="bar")
+
+plt.title("Hotel Type Distribution")
+plt.xlabel("Hotel Type")
+plt.ylabel("Number of Bookings")
+plt.xticks(rotation=0)
+plt.tight_layout()
+plt.show()
+
+
+# ============================================================
+# 32. CUSTOMER TYPE BAR CHART
+# ============================================================
+
+plt.figure(figsize=(8, 5))
+
+hotel["customer_type"].value_counts().plot(kind="bar")
+
+plt.title("Customer Type Distribution")
+plt.xlabel("Customer Type")
+plt.ylabel("Number of Bookings")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+
+# ============================================================
+# 33. MARKET SEGMENT BAR CHART
+# ============================================================
+
+plt.figure(figsize=(10, 5))
+
+hotel["market_segment"].value_counts().plot(kind="bar")
+
+plt.title("Market Segment Distribution")
+plt.xlabel("Market Segment")
+plt.ylabel("Number of Bookings")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+
+# ============================================================
+# 34. DATA TRANSFORMATION - TOTAL STAY
+# ============================================================
+
+hotel["total_stay"] = (
+    hotel["stays_in_weekend_nights"]
+    + hotel["stays_in_week_nights"]
+)
+
+print("\nTotal Stay:")
+display(
+    hotel[
+        [
+            "stays_in_weekend_nights",
+            "stays_in_week_nights",
+            "total_stay"
+        ]
+    ].head()
+)
+
+
+# ============================================================
+# 35. DATA TRANSFORMATION - TOTAL GUESTS
+# ============================================================
+
+hotel["total_guests"] = (
+    hotel["adults"]
+    + hotel["children"]
+    + hotel["babies"]
+)
+
+print("\nTotal Guests:")
+display(
+    hotel[
+        [
+            "adults",
+            "children",
+            "babies",
+            "total_guests"
+        ]
+    ].head()
+)
+
+
+# ============================================================
+# 36. OPTIONAL - AVERAGE DAILY RATE PER GUEST
+# ============================================================
+
+hotel["adr_per_guest"] = np.where(
+    hotel["total_guests"] > 0,
+    hotel["adr"] / hotel["total_guests"],
+    0
+)
+
+print("\nADR Per Guest:")
+display(
+    hotel[
+        [
+            "adr",
+            "total_guests",
+            "adr_per_guest"
+        ]
+    ].head()
+)
+
+
+# ============================================================
+# 37. FINAL DATASET CHECK
+# ============================================================
+
+print("\nFinal Dataset Shape:")
+print(hotel.shape)
+
+
+print("\nFinal Missing Values:")
+display(hotel.isnull().sum())
+
+
+print("\nFinal Data Types:")
+display(hotel.dtypes)
+
+
+# ============================================================
+# 38. SAVE CLEANED DATASET
+# ============================================================
+
+hotel.to_csv(
+    "hotel_booking_cleaned.csv",
+    index=False
+)
+
+print("\nCleaned dataset saved successfully:")
+print("hotel_booking_cleaned.csv")
+
+
+# ============================================================
+# 39. SAVE EXCEL VERSION - OPTIONAL
+# ============================================================
+
+hotel.to_excel(
+    "hotel_booking_cleaned.xlsx",
+    index=False
+)
+
+print("Excel cleaned dataset saved successfully:")
+print("hotel_booking_cleaned.xlsx")
+
+
+# ============================================================
+# 40. DOWNLOAD FILES FROM GOOGLE COLAB - OPTIONAL
+# ============================================================
+
+# Uncomment the lines below if you want to download files.
+
+# files.download("hotel_booking_cleaned.csv")
+# files.download("Hotel_Booking_Report.html")
+# files.download("Hotel_Booking_Sweetviz_Report.html")
+
+
+# ============================================================
+# 41. FINAL SUMMARY
+# ============================================================
+
+print("\n============================================")
+print("HOTEL BOOKING EDA COMPLETED SUCCESSFULLY")
+print("============================================")
+
+print("Original/Current Dataset Shape :", hotel.shape)
+print("Cleaned Dataset                : hotel_booking_cleaned.csv")
+print("Cleaned Excel                  : hotel_booking_cleaned.xlsx")
+print("YData Report                   : Hotel_Booking_Report.html")
+print("Sweetviz Report                : Hotel_Booking_Sweetviz_Report.html")
+print("============================================")
